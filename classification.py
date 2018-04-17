@@ -30,6 +30,14 @@ def resultToDf(df, result):
 	df_out = pd.concat([df_out, df_result], axis=1)
 	return df_out
 
+def predictEval(y_true, y_pred):
+	result = {}
+	result['precision'] = [precision_score(y_true[:,i], y_pred[:,i]) for i in range(len(y_true[0]))]
+	result['recall'] = [recall_score(y_true[:,i], y_pred[:,i]) for i in range(len(y_true[0]))]
+	result['f1'] = [f1_score(y_true[:,i], y_pred[:,i]) for i in range(len(y_true[0]))]
+	result = pd.DataFrame(result, index=['HorseWin', 'HorseRankTop3', 'HorseRankTop50Percent'])
+	return result
+
 df_train = pd.read_csv('data/training.csv')
 train_X = df_train[['actual_weight','declared_horse_weight','draw','win_odds','recent_ave_rank','jockey_ave_rank','trainer_ave_rank','race_distance']].values
 train_Y = np.ravel(df_train[['finishing_position']].values)
@@ -83,6 +91,9 @@ predict_nb = predictionToResult(df_test, nb_model.predict(test_X))
 df_nb = resultToDf(df_test, predict_nb)
 df_nb.to_csv('predictions/nb_predictions.csv', index=False)
 
+predict_clf = predictionToResult(df_test, clf.predict(test_X))
+df_clf = resultToDf(df_test, predict_clf)
+
 predict_svm = predictionToResult(df_test, svm_model.predict(test_X))
 df_svm = resultToDf(df_test, predict_svm)
 df_svm.to_csv('predictions/svm_predictions.csv', index=False)
@@ -93,3 +104,18 @@ df_rf.to_csv('predictions/rf_predictions.csv', index=False)
 
 # 3.3
 predict_true = predictionToResult(df_test, test_Y)
+
+eval_lr = predictEval(predict_true, predict_lr)
+print("lr\n", eval_lr)
+
+eval_nb = predictEval(predict_true, predict_nb)
+print("nb\n", eval_nb)
+
+eval_clf = predictEval(predict_true, predict_clf)
+print("clf\n", eval_clf)
+
+eval_svm = predictEval(predict_true, predict_svm)
+print("svm\n", eval_svm)
+
+eval_rf = predictEval(predict_true, predict_rf)
+print("rf\n", eval_rf)
