@@ -29,15 +29,15 @@ df_horse['trainer_id'] = df_horse['trainer'].replace(allTrainer ,list(range(len(
 
 df_horse = df_horse.assign(jockey_ave_rank = 7.0)
 for i in range(len(allJockey)):
-	mean = pd.to_numeric(df_horse[(df_horse.jockey==i) & (df_horse.race_id<="2016-327")].finishing_position).mean()
+	mean = pd.to_numeric(df_horse[(df_horse.jockey_id==i) & (df_horse.race_id<="2016-327")].finishing_position).mean()
 	mean = 7.0 if mean is np.nan else mean
-	df_horse.loc[df_horse.jockey==i, 'jockey_ave_rank'] = mean
+	df_horse.loc[df_horse.jockey_id==i, 'jockey_ave_rank'] = mean
 
 df_horse = df_horse.assign(trainer_ave_rank = 7.0)
 for i in range(len(allTrainer)):
-	mean = pd.to_numeric(df_horse[(df_horse.trainer==i) & (df_horse.race_id<="2016-327")].finishing_position).mean()
+	mean = pd.to_numeric(df_horse[(df_horse.trainer_id==i) & (df_horse.race_id<="2016-327")].finishing_position).mean()
 	mean = 7.0 if mean is np.nan else mean
-	df_horse.loc[df_horse.trainer==i, 'trainer_ave_rank'] = mean
+	df_horse.loc[df_horse.trainer_id==i, 'trainer_ave_rank'] = mean
 
 # 2.2.4
 df_race = pd.read_csv('data/race-result-race.csv')
