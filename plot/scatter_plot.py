@@ -9,7 +9,7 @@ racebyHorse = raceCountByHorse.join(raceWinByHorse, lsuffix='_count', rsuffix='_
 racebyHorse['winRate'] = racebyHorse['finishing_position_win'] / racebyHorse['finishing_position_count']
 horseArr = racebyHorse.reset_index().values
 
-f, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,10))
+f, (ax1, ax2) = plt.subplots(2, 1, figsize=(10,10))
 ax1.scatter(horseArr[:,3], horseArr[:,2])
 for i, e in enumerate(horseArr[:,0]):
 	if horseArr[i][3] >= 0.5 and horseArr[i][2] >=4:
