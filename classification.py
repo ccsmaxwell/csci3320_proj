@@ -2,13 +2,24 @@ import pandas as pd
 import numpy as np
 
 from sklearn.model_selection import StratifiedKFold
-from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
+from sklearn.linear_model import LogisticRegressionCV
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 from naive_bayes import NaiveBayes
+
+def cvTrain(modal, X, y):
+	skf_list = list(StratifiedKFold(n_splits=10, random_state=3320, shuffle=True).split(X, y))
+	max_score, max_model = -1, None
+	for train_index, test_index in skf_list:
+		temp_max_model = modal.fit(X[train_index], y[train_index])
+		temp_score = temp_max_model.score(X[test_index], y[test_index])
+		if(temp_score > max_score):
+			max_score = temp_score
+			max_model = temp_max_model
+	return max_model
 
 def predictionToResult(df, y):
 	raceSize = df.groupby('race_id').size()
@@ -48,35 +59,16 @@ lr_model.fit(train_X, train_Y)
 
 # 3.1.2
 skf_list = list(StratifiedKFold(n_splits=10, random_state=3320, shuffle=True).split(train_X, train_Y))
-max_score, nb_model = -1, None
-for train_index, test_index in skf_list:
-	temp_nb_model = GaussianNB().fit(train_X[train_index], train_Y[train_index])
-	temp_score = temp_nb_model.score(train_X[test_index], train_Y[test_index])
-	if(temp_score > max_score):
-		max_score = temp_score
-		nb_model = temp_nb_model
+nb_model = cvTrain(GaussianNB(), train_X, train_Y)
 
 clf = NaiveBayes()
 clf = clf.fit(train_X, train_Y)
-# y_predict = clf.predict(X)
 
 # 3.1.3
-max_score, svm_model = -1, None
-for train_index, test_index in skf_list:
-	temp_svm_model = SVC(kernel="rbf",random_state=3320).fit(train_X[train_index], train_Y[train_index])
-	temp_score = temp_svm_model.score(train_X[test_index], train_Y[test_index])
-	if(temp_score > max_score):
-		max_score = temp_score
-		svm_model = temp_svm_model
+svm_model = cvTrain(SVC(kernel="rbf",random_state=3320), train_X, train_Y)
 
 # 3.1.4
-max_score, rf_model = -1, None
-for train_index, test_index in skf_list:
-	temp_rf_model = RandomForestClassifier(random_state=3320).fit(train_X[train_index], train_Y[train_index])
-	temp_score = temp_rf_model.score(train_X[test_index], train_Y[test_index])
-	if(temp_score > max_score):
-		max_score = temp_score
-		rf_model = temp_rf_model
+rf_model = cvTrain(RandomForestClassifier(random_state=3320), train_X, train_Y)
 
 # 3.2
 df_test = pd.read_csv('data/testing.csv')
