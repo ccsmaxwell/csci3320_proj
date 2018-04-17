@@ -21,11 +21,11 @@ for i in allHorse:
 		rank_rec.append(str(df_i.at[index, 'finishing_position']))
 
 # 2.2.3
-df_horse['horse_id'] = df_horse['horse_id'].replace(allHorse ,list(range(len(allHorse))))
+df_horse['horse_id_num'] = df_horse['horse_id'].replace(allHorse ,list(range(len(allHorse))))
 allJockey = df_horse.jockey.unique()
-df_horse['jockey'] = df_horse['jockey'].replace(allJockey ,list(range(len(allJockey))))
+df_horse['jockey_id'] = df_horse['jockey'].replace(allJockey ,list(range(len(allJockey))))
 allTrainer = df_horse.trainer.unique()
-df_horse['trainer'] = df_horse['trainer'].replace(allTrainer ,list(range(len(allTrainer))))
+df_horse['trainer_id'] = df_horse['trainer'].replace(allTrainer ,list(range(len(allTrainer))))
 
 df_horse = df_horse.assign(jockey_ave_rank = 7.0)
 for i in range(len(allJockey)):

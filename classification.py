@@ -22,7 +22,7 @@ def cvTrain(modal, X, y):
 	return max_model
 
 def predictionToResult(df, y):
-	raceSize = df.groupby('race_id').size()
+	raceSize = df.groupby('race_id').finishing_position.max()
 
 	result = []
 	for i in range(len(y)):
