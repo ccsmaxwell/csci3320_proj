@@ -9,15 +9,14 @@ feature = ['recent_ave_rank','jockey_ave_rank']
 X = df_train[feature].values
 
 raceSize = df_train.groupby('race_id').finishing_position.max()
-# y = [1 if y[i] <= raceSize[df.iloc[i].race_id]/2 else 0 for i in range(raceSize.size)]np.ravel(df_train[['finishing_position']].values)
+y = np.ravel(df_train[['finishing_position']].values)
+y = [1 if y[i] <= raceSize[df_train.iloc[i].race_id]/2 else 0 for i in range(len(y))]
 
 svm_model = SVC(kernel="linear",random_state=3320)
 svm_model.fit(X, y)
 
 X0, X1 = X[:, 0], X[:, 1]
-x_min, x_max = X0.min() - 1, X0.max() + 1
-y_min, y_max = X1.min() - 1, X1.max() + 1
-xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1),np.arange(y_min, y_max, 0.1))
+xx, yy = np.meshgrid(np.arange(X0.min() - 1, X0.max() + 1, 0.05),np.arange(X1.min() - 1, X1.max() + 1, 0.05))
 Z = svm_model.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
 
 plt.contourf(xx, yy, Z, cmap=plt.cm.coolwarm, alpha=0.8)
