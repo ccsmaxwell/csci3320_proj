@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import time
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegressionCV
@@ -14,11 +15,13 @@ def cvTrain(modal, X, y):
 	skf_list = list(StratifiedKFold(n_splits=10, random_state=3320, shuffle=True).split(X, y))
 	max_score, max_model = -1, None
 	for train_index, test_index in skf_list:
+		print("*", end="")
 		temp_max_model = modal.fit(X[train_index], y[train_index])
 		temp_score = temp_max_model.score(X[test_index], y[test_index])
 		if(temp_score > max_score):
 			max_score = temp_score
 			max_model = temp_max_model
+	print("")
 	return max_model
 
 def predictionToResult(df, y):
@@ -54,60 +57,90 @@ train_X = df_train[['actual_weight','declared_horse_weight','draw','win_odds','r
 train_Y = np.ravel(df_train[['finishing_position']].values)
 
 # 3.1.1
+print("Start LogisticRegression CV")
+start = time.time()
 lr_model = LogisticRegressionCV(cv=10, random_state=3320)
 lr_model.fit(train_X, train_Y)
+print("End LogisticRegression CV, Time: %s s" % (time.time() - start))
 
 # 3.1.2
+print("Start GaussianNB CV")
+start = time.time()
 skf_list = list(StratifiedKFold(n_splits=10, random_state=3320, shuffle=True).split(train_X, train_Y))
 nb_model = cvTrain(GaussianNB(), train_X, train_Y)
+print("End GaussianNB CV, Time: %s s" % (time.time() - start))
 
+print("Start self NaiveBayes")
+start = time.time()
 clf = NaiveBayes()
 clf = clf.fit(train_X, train_Y)
+print("End lf NaiveBayes, Time: %s s" % (time.time() - start))
 
 # 3.1.3
+print("Start SVC CV")
+start = time.time()
 svm_model = cvTrain(SVC(kernel="rbf",random_state=3320), train_X, train_Y)
+print("End SVC CV, Time: %s s" % (time.time() - start))
 
 # 3.1.4
+print("Start RandomForestClassifier CV")
+start = time.time()
 rf_model = cvTrain(RandomForestClassifier(random_state=3320), train_X, train_Y)
+print("End RandomForestClassifier CV, Time: %s s" % (time.time() - start))
 
 # 3.2
 df_test = pd.read_csv('data/testing.csv')
 test_X = df_test[['actual_weight','declared_horse_weight','draw','win_odds','recent_ave_rank','jockey_ave_rank','trainer_ave_rank','race_distance']].values
 test_Y = np.ravel(df_test[['finishing_position']].values)
 
+print("Start LogisticRegression predict")
+start = time.time()
 predict_lr = predictionToResult(df_test, lr_model.predict(test_X))
 df_lr = resultToDf(df_test, predict_lr)
 df_lr.to_csv('predictions/lr_predictions.csv', index=False)
+print("End LogisticRegression predict, Time: %s s" % (time.time() - start))
 
+print("Start GaussianNB predict")
+start = time.time()
 predict_nb = predictionToResult(df_test, nb_model.predict(test_X))
 df_nb = resultToDf(df_test, predict_nb)
 df_nb.to_csv('predictions/nb_predictions.csv', index=False)
+print("End GaussianNB predict, Time: %s s" % (time.time() - start))
 
+print("Start self NaiveBayes predict")
+start = time.time()
 predict_clf = predictionToResult(df_test, clf.predict(test_X))
 df_clf = resultToDf(df_test, predict_clf)
+print("End self NaiveBayes predict, Time: %s s" % (time.time() - start))
 
+print("Start SVC predict")
+start = time.time()
 predict_svm = predictionToResult(df_test, svm_model.predict(test_X))
 df_svm = resultToDf(df_test, predict_svm)
 df_svm.to_csv('predictions/svm_predictions.csv', index=False)
+print("End SVC predict, Time: %s s" % (time.time() - start))
 
+print("Start RandomForestClassifier predict")
+start = time.time()
 predict_rf = predictionToResult(df_test, rf_model.predict(test_X))
 df_rf = resultToDf(df_test, predict_rf)
 df_rf.to_csv('predictions/rf_predictions.csv', index=False)
+print("End RandomForestClassifier predict, Time: %s s" % (time.time() - start))
 
 # 3.3
 predict_true = predictionToResult(df_test, test_Y)
 
 eval_lr = predictEval(predict_true, predict_lr)
-print("lr\n", eval_lr)
+print("LogisticRegression\n", eval_lr)
 
 eval_nb = predictEval(predict_true, predict_nb)
-print("nb\n", eval_nb)
+print("GaussianNB\n", eval_nb)
 
 eval_clf = predictEval(predict_true, predict_clf)
-print("clf\n", eval_clf)
+print("self NaiveBayes\n", eval_clf)
 
 eval_svm = predictEval(predict_true, predict_svm)
-print("svm\n", eval_svm)
+print("SVC\n", eval_svm)
 
 eval_rf = predictEval(predict_true, predict_rf)
-print("rf\n", eval_rf)
+print("RandomForestClassifier\n", eval_rf)
