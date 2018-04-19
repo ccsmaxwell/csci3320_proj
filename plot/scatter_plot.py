@@ -14,7 +14,7 @@ ax1.scatter(horseArr[:,3], horseArr[:,2])
 for i, e in enumerate(horseArr[:,0]):
 	if horseArr[i][3] >= 0.5 and horseArr[i][2] >=4:
 		ax1.annotate(e, (horseArr[i][3],horseArr[i][2]))
-ax1.set_title('Horse')
+ax1.set_title('Horse - Win Rate vs. Number of Wins')
 ax1.set_xlabel('win rate')
 ax1.set_ylabel('number of wins')
 
@@ -29,7 +29,7 @@ ax2.scatter(jockeyArr[:,3], jockeyArr[:,2])
 for i, e in enumerate(jockeyArr[:,0]):
 	if jockeyArr[i][3] >= 0.15 and jockeyArr[i][2] >=100:
 		ax2.annotate(e, (jockeyArr[i][3],jockeyArr[i][2]))
-ax2.set_title('Jockey')
+ax2.set_title('Jockey - Win Rate vs. Number of Wins')
 ax2.set_xlabel('win rate')
 ax2.set_ylabel('number of wins')
 

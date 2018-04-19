@@ -21,4 +21,7 @@ Z = svm_model.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
 
 plt.contourf(xx, yy, Z, cmap=plt.cm.coolwarm, alpha=0.8)
 plt.scatter(X0, X1, c=y, cmap=plt.cm.coolwarm)
+plt.title("SVM: recent_rank vs. jockey_ave_rank")
+plt.xlabel('recent_rank')
+plt.ylabel('jockey_ave_rank')
 plt.show()
