@@ -10,15 +10,17 @@ from sklearn.preprocessing import StandardScaler
 def predeictToEval(df, y):
 	rmse = math.sqrt(mean_squared_error(df['finish_time_ms'].values , y))
 
-	y_top1 = [0 for i in y]
+	y_rank = [0 for i in y]
 	df = df.reset_index(drop=True)
 	raceIndex = df.groupby('race_id').indices
 	for raceId in raceIndex:
-		y_top1[raceIndex[raceId][np.argmin(y[raceIndex[raceId]])]] = 1
+		sortIndex = np.argsort(y[raceIndex[raceId]])
+		for i in range(len(sortIndex)):
+			y_rank[raceIndex[raceId][sortIndex[i]]] = i + 1
 
 	top1, top3, avgRank = [], [], []
-	for i in range(len(y_top1)):
-		if y_top1[i] == 1:
+	for i in range(len(y_rank)):
+		if y_rank[i] == 1:
 			pos = df.iloc[i].finishing_position
 			top1.append(1 if pos==1 else 0)
 			top3.append(1 if pos<=3 else 0)
@@ -26,7 +28,7 @@ def predeictToEval(df, y):
 
 	df_out = df[['race_id','horse_id']]
 	df_out.columns = ['RaceID', 'HorseID']
-	df_result = pd.DataFrame(y_top1, columns=['HorseWin'])
+	df_result = pd.DataFrame(y_rank, columns=['HorseRank'])
 	df_out = pd.concat([df_out, df_result], axis=1)
 
 	return [(rmse, np.mean(top1), np.mean(top3), np.mean(avgRank)), df_out]
@@ -52,9 +54,11 @@ test_Y = np.ravel(df_test[['finish_time_ms']].values)
 
 result_svr = predeictToEval(df_test, svr_model.predict(test_X))
 print("SVR: ", result_svr[0])
+result_svr[1].to_csv('predictions/svr_predictions.csv', index=False)
 
 result_gbrt = predeictToEval(df_test, gbrt_model.predict(test_X))
 print("GBRT: ", result_gbrt[0])
+result_gbrt[1].to_csv('predictions/gbrt_predictions.csv', index=False)
 
 # Normalization
 print("Normalization")
@@ -70,8 +74,8 @@ gbrt_model.fit(train_X_norm, train_Y)
 
 result_svr = predeictToEval(df_test, svr_model.predict(test_X_norm))
 print("SVR: ", result_svr[0])
-result_svr[1].to_csv('predictions/svr_predictions.csv', index=False)
+result_svr[1].to_csv('predictions/svr_norm_predictions.csv', index=False)
 
 result_gbrt = predeictToEval(df_test, gbrt_model.predict(test_X_norm))
 print("GBRT: ", result_gbrt[0])
-result_gbrt[1].to_csv('predictions/gbrt_predictions.csv', index=False)
+result_gbrt[1].to_csv('predictions/gbrt_norm_predictions.csv', index=False)
