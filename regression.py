@@ -14,7 +14,7 @@ def predeictToEval(df, y):
 	df = df.reset_index(drop=True)
 	raceIndex = df.groupby('race_id').indices
 	for raceId in raceIndex:
-		y_top1[raceIndex[raceId][np.argmax(y[raceIndex[raceId]])]] = 1
+		y_top1[raceIndex[raceId][np.argmin(y[raceIndex[raceId]])]] = 1
 
 	top1, top3, avgRank = [], [], []
 	for i in range(len(y_top1)):
@@ -24,22 +24,24 @@ def predeictToEval(df, y):
 			top3.append(1 if pos<=3 else 0)
 			avgRank.append(pos)
 
-	return rmse, np.mean(top1), np.mean(top3), np.mean(avgRank)
+	df_out = df[['race_id','horse_id']]
+	df_out.columns = ['RaceID', 'HorseID']
+	df_result = pd.DataFrame(y_top1, columns=['HorseWin'])
+	df_out = pd.concat([df_out, df_result], axis=1)
+
+	return [(rmse, np.mean(top1), np.mean(top3), np.mean(avgRank)), df_out]
 
 df_train = pd.read_csv('data/training.csv')
 df_train['finish_time_ms'] = df_train[['finish_time']].apply(lambda x : np.multiply(np.array(x.finish_time.split('.')).astype(np.int), [6000,100,1]).sum(), axis=1)
 train_X = df_train[['actual_weight','declared_horse_weight','draw','win_odds','jockey_ave_rank','trainer_ave_rank','recent_ave_rank','race_distance']].values
 train_Y = np.ravel(df_train[['finish_time_ms']].values)
 
-scaler = StandardScaler()
-train_X_norm = scaler.fit_transform(train_X, train_Y)
-
 # 4.1.1
-svr_model = SVR(kernel='rbf', C=1, epsilon=0.1)
+svr_model = SVR(kernel='rbf', C=5, epsilon=0.5)
 svr_model.fit(train_X, train_Y)
 
 # 4.1.2
-gbrt_model = GradientBoostingRegressor(loss='ls', learning_rate=0.1, n_estimators=100, max_depth=3, random_state=3320)
+gbrt_model = GradientBoostingRegressor(loss='quantile', learning_rate=0.03, n_estimators=300, max_depth=3, random_state=3320)
 gbrt_model.fit(train_X, train_Y)
 
 # 4.2
@@ -48,10 +50,28 @@ df_test['finish_time_ms'] = df_test[['finish_time']].apply(lambda x : np.multipl
 test_X = df_test[['actual_weight','declared_horse_weight','draw','win_odds','jockey_ave_rank','trainer_ave_rank','recent_ave_rank','race_distance']].values
 test_Y = np.ravel(df_test[['finish_time_ms']].values)
 
-test_X_norm = scaler.transform(test_X)
-
 result_svr = predeictToEval(df_test, svr_model.predict(test_X))
-print(result_svr)
+print("SVR: ", result_svr[0])
 
 result_gbrt = predeictToEval(df_test, gbrt_model.predict(test_X))
-print(result_gbrt)
+print("GBRT: ", result_gbrt[0])
+
+# Normalization
+print("Normalization")
+scaler = StandardScaler()
+train_X_norm = scaler.fit_transform(train_X, train_Y)
+test_X_norm = scaler.transform(test_X)
+
+svr_model = SVR(kernel='rbf', C=5, epsilon=0.5)
+svr_model.fit(train_X_norm, train_Y)
+
+gbrt_model = GradientBoostingRegressor(loss='quantile', learning_rate=0.03, n_estimators=300, max_depth=3, random_state=3320)
+gbrt_model.fit(train_X_norm, train_Y)
+
+result_svr = predeictToEval(df_test, svr_model.predict(test_X_norm))
+print("SVR: ", result_svr[0])
+result_svr[1].to_csv('predictions/svr_predictions.csv', index=False)
+
+result_gbrt = predeictToEval(df_test, gbrt_model.predict(test_X_norm))
+print("GBRT: ", result_gbrt[0])
+result_gbrt[1].to_csv('predictions/gbrt_predictions.csv', index=False)
