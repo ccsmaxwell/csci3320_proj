@@ -93,8 +93,8 @@ for race_id in allRace:
 		winID = df_top.iloc[0].name
 	# check if the horse win
 	winIDRec = df_test[(df_test.race_id == race_id) & (df_test.horse_id == winID)]
-	if winIDRec.win_odds.values[0] < 12:
+	if winIDRec.win_odds.values[0] < 30:
 		resultAmt = resultAmt - 1
 		if winIDRec.finishing_position.values[0] == 1:
-			resultAmt = resultAmt + winIDRec.win_odds.values[0]			
+			resultAmt = resultAmt + winIDRec.win_odds.values[0]
 print(resultAmt)

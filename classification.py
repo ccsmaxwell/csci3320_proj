@@ -8,6 +8,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.preprocessing import StandardScaler
 
 from naive_bayes import NaiveBayes
 
@@ -77,9 +78,11 @@ clf = clf.fit(train_X, train_Y)
 print("End self NaiveBayes, Time: %s s" % (time.time() - start))
 
 # 3.1.3
+scaler = StandardScaler()
+train_X_norm = scaler.fit_transform(train_X)
 print("Start SVC CV")
 start = time.time()
-svm_model = cvTrain(SVC(kernel="rbf",random_state=3320), train_X, train_Y)
+svm_model = cvTrain(SVC(kernel="rbf",random_state=3320), train_X_norm, train_Y)
 print("End SVC CV, Time: %s s" % (time.time() - start))
 
 # 3.1.4
@@ -113,9 +116,10 @@ predict_clf = predictionToResult(df_test, clf.predict(test_X))
 df_clf = resultToDf(df_test, predict_clf)
 print("End self NaiveBayes predict, Time: %s s" % (time.time() - start))
 
+test_X_norm = scaler.transform(test_X)
 print("Start SVC predict")
 start = time.time()
-predict_svm = predictionToResult(df_test, svm_model.predict(test_X))
+predict_svm = predictionToResult(df_test, svm_model.predict(test_X_norm))
 df_svm = resultToDf(df_test, predict_svm)
 df_svm.to_csv('predictions/svm_predictions.csv', index=False)
 print("End SVC predict, Time: %s s" % (time.time() - start))
