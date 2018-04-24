@@ -82,7 +82,7 @@ scaler = StandardScaler()
 train_X_norm = scaler.fit_transform(train_X)
 print("Start SVC CV")
 start = time.time()
-svm_model = cvTrain(SVC(kernel="rbf",random_state=3320), train_X_norm, train_Y)
+svm_model = cvTrain(SVC(kernel="linear",random_state=3320), train_X_norm, train_Y)
 print("End SVC CV, Time: %s s" % (time.time() - start))
 
 # 3.1.4

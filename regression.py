@@ -39,7 +39,7 @@ train_X = df_train[['actual_weight','declared_horse_weight','draw','win_odds','j
 train_Y = np.ravel(df_train[['finish_time_ms']].values)
 
 # 4.1.1
-svr_model = SVR(kernel='rbf', C=5, epsilon=0.5)
+svr_model = SVR(kernel='linear', C=5, epsilon=0.5)
 svr_model.fit(train_X, train_Y)
 
 # 4.1.2
@@ -66,7 +66,7 @@ scaler = StandardScaler()
 train_X_norm = scaler.fit_transform(train_X, train_Y)
 test_X_norm = scaler.transform(test_X)
 
-svr_model = SVR(kernel='rbf', C=5, epsilon=0.5)
+svr_model = SVR(kernel='linear', C=5, epsilon=0.5)
 svr_model.fit(train_X_norm, train_Y)
 
 gbrt_model = GradientBoostingRegressor(loss='quantile', learning_rate=0.03, n_estimators=300, max_depth=3, random_state=3320)
